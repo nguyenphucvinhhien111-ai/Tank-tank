@@ -1,4 +1,4 @@
-package com.sothuchi.app;
+package com.tanktrouble.game;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
