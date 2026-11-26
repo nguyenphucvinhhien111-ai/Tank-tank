@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tank Trouble 2026 - Chiến Trường Xe Tank</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Tank Trouble 2026 - Chiến Trường Xe Tank</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,8 +14,8 @@
     <!-- Header / HUD -->
     <header class="game-hud">
       <div class="hud-left">
-        <div class="logo">⚡ TANK TROUBLE <span>PRO</span></div>
-        <div class="game-mode-badge" id="hudGameMode">CHẾ ĐỘ: SINH TỒN</div>
+        <div class="logo">⚡ TANK <span>TROUBLE</span></div>
+        <div class="game-mode-badge" id="hudGameMode">SINH TỒN</div>
       </div>
       <div class="hud-center">
         <div class="score-card player-score">
@@ -26,44 +26,53 @@
         <div class="vs-badge">VS</div>
         <div class="score-card enemy-score">
           <span class="dot enemy-dot"></span>
-          <span class="label">ĐỊCH CÒN:</span>
+          <span class="label">ĐỊCH:</span>
           <span class="value" id="enemyCountDisplay">3</span>
+        </div>
+        <div class="weapon-hud-badge" id="hudWeaponBadge">
+          <span class="w-icon" id="hudWeaponIcon">💣</span>
+          <span class="w-name" id="hudWeaponName">ĐẠN THƯỜNG</span>
         </div>
         <div class="flag-status-card" id="flagStatusBox" style="display:none;">
           <span class="flag-icon">🚩</span>
-          <span id="flagStatusText">Cờ: Tại căn cứ</span>
+          <span id="flagStatusText">Cờ: Căn cứ địch</span>
         </div>
       </div>
       <div class="hud-right">
-        <button id="btnSettings" class="btn-icon" title="Cài đặt trận đấu">⚙️</button>
-        <button id="btnPause" class="btn-icon" title="Tạm dừng">⏸</button>
-        <button id="btnRestartQuick" class="btn-primary-sm">Làm mới 🔄</button>
+        <button id="btnSettings" class="btn-icon" title="Cài đặt">⚙️</button>
+        <button id="btnRestartQuick" class="btn-primary-sm">LÀM MỚI 🔄</button>
       </div>
     </header>
 
     <!-- Main Game Board -->
-    <main class="canvas-container">
+    <main class="canvas-container" id="canvasContainer">
       <canvas id="gameCanvas" width="900" height="600"></canvas>
       
-      <!-- Mobile On-screen Controls -->
-      <div class="mobile-controls" id="mobileControls">
-        <div class="dpad">
-          <button class="dpad-btn up" id="btnUp">▲</button>
-          <div class="dpad-horizontal">
-            <button class="dpad-btn left" id="btnLeft">◀</button>
-            <button class="dpad-btn right" id="btnRight">▶</button>
+      <!-- Android Dual Touch Controls Overlay -->
+      <div class="touch-controls-layer" id="touchControlsLayer">
+        <!-- Vùng Joystick ảo bên trái -->
+        <div class="joystick-zone" id="joystickZone">
+          <div class="joystick-base" id="joystickBase">
+            <div class="joystick-stick" id="joystickStick"></div>
           </div>
-          <button class="dpad-btn down" id="btnDown">▼</button>
+          <div class="joystick-guide-text">🕹️ Chạm & Kéo để Lái</div>
         </div>
-        <div class="action-buttons">
-          <button class="fire-btn" id="btnFire">🔥 BẮN</button>
+
+        <!-- Cụm Nút Chiến Đấu bên phải -->
+        <div class="action-zone" id="actionZone">
+          <button class="touch-btn fire-main-btn" id="touchFireBtn">
+            <div class="fire-inner">
+              <span class="fire-icon">🔥</span>
+              <span class="fire-label">BẮN</span>
+            </div>
+          </button>
         </div>
       </div>
     </main>
 
     <!-- Footer Guides -->
     <footer class="game-footer">
-      <span>⌨️ <b>Phím máy tính:</b> Mũi tên / W,A,S,D để Lái xe | <b>SPACE (Cách)</b> hoặc <b>J</b> để Bắn đạn nảy | <b>R</b>: Chơi lại</span>
+      <span>📱 <b>Android:</b> Cần Joystick bên trái để lái | Nút BẮN bên phải | Bàn phím: <b>W,A,S,D / Mũi tên</b> + <b>SPACE</b> để bắn</span>
     </footer>
   </div>
 
@@ -87,14 +96,14 @@
             <label class="radio-card">
               <input type="radio" name="gameMode" value="capture_flag">
               <div class="card-title">🚩 Cướp cờ (CTF)</div>
-              <div class="card-desc">Vượt qua phòng thủ, chạm cờ địch và đem về căn cứ!</div>
+              <div class="card-desc">Vượt qua phòng thủ, cướp cờ địch và đem về căn cứ!</div>
             </label>
           </div>
         </div>
 
         <!-- Chọn Bản Đồ (Map) -->
         <div class="setting-group">
-          <label class="setting-label">🗺️ Chọn Bản Đồ (Map):</label>
+          <label class="setting-label">🗺️ Chọn Bản Đồ:</label>
           <div class="map-grid" id="mapSelectorGrid">
             <!-- Render maps via JS -->
           </div>
@@ -104,18 +113,18 @@
         <div class="setting-group">
           <label class="setting-label">🤖 Số lượng Xe Tank Địch (Bot AI):</label>
           <div class="slider-row">
-            <input type="range" id="enemyCountSlider" min="1" max="7" value="3" step="1">
+            <input type="range" id="enemyCountSlider" min="1" max="6" value="3" step="1">
             <span class="slider-val-badge" id="sliderValDisplay">3 chiếc</span>
           </div>
-          <div class="slider-hint">Xe tăng địch có AI tự tìm đường, né đạn nảy và ngắm bắn!</div>
+          <div class="slider-hint">Xe tăng địch tự dò đường, né đạn nảy và lùng sục nhặt thùng vũ khí!</div>
         </div>
 
         <!-- Độ khó của Bot -->
         <div class="setting-group">
-          <label class="setting-label">🧠 Trí thông minh của Bot AI:</label>
+          <label class="setting-label">🧠 Độ thông minh của Bot:</label>
           <select id="botDifficultySelect" class="form-select">
-            <option value="easy">Dễ (Bắn chậm, di chuyển thong thả)</option>
-            <option value="medium" selected>Vừa phải (Bắn chuẩn, biết lùng sục)</option>
+            <option value="easy">Dễ (Bắn thưa, đi chậm)</option>
+            <option value="medium" selected>Vừa phải (Bắn chuẩn, biết nhặt hòm)</option>
             <option value="hard">Khó (Ngắm đón đầu, đạn nảy tính góc cực gắt)</option>
           </select>
         </div>
