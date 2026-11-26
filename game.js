@@ -82,12 +82,66 @@ const MAPS = [
 ];
 
 const TANK_COLORS = {
-  player: { body: '#00f2fe', turret: '#00a8ff', track: '#1e2230' },
-  enemy1: { body: '#ff3366', turret: '#c70039', track: '#1e2230' },
-  enemy2: { body: '#2ecc71', turret: '#27ae60', track: '#1e2230' },
-  enemy3: { body: '#f1c40f', turret: '#f39c12', track: '#1e2230' },
-  enemy4: { body: '#9b59b6', turret: '#8e44ad', track: '#1e2230' },
-  enemy5: { body: '#e67e22', turret: '#d35400', track: '#1e2230' }
+  player: { 
+    body: '#38bdf8', 
+    bodyDark: '#0284c7', 
+    turret: '#0ea5e9', 
+    turretDark: '#0369a1',
+    highlight: '#bae6fd',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Bạn' 
+  },
+  enemy1: { 
+    body: '#fb7185', 
+    bodyDark: '#e11d48', 
+    turret: '#f43f5e', 
+    turretDark: '#be123c',
+    highlight: '#fecdd3',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Địch Đỏ' 
+  },
+  enemy2: { 
+    body: '#4ade80', 
+    bodyDark: '#16a34a', 
+    turret: '#22c55e', 
+    turretDark: '#15803d',
+    highlight: '#bbf7d0',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Địch Xanh Lá' 
+  },
+  enemy3: { 
+    body: '#facc15', 
+    bodyDark: '#ca8a04', 
+    turret: '#eab308', 
+    turretDark: '#a16207',
+    highlight: '#fef08a',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Địch Vàng' 
+  },
+  enemy4: { 
+    body: '#c084fc', 
+    bodyDark: '#9333ea', 
+    turret: '#a855f7', 
+    turretDark: '#7e22ce',
+    highlight: '#f3e8ff',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Địch Tím' 
+  },
+  enemy5: { 
+    body: '#fb923c', 
+    bodyDark: '#ea580c', 
+    turret: '#f97316', 
+    turretDark: '#c2410c',
+    highlight: '#ffedd5',
+    track: '#334155',
+    trackWheel: '#64748b',
+    name: 'Địch Cam' 
+  }
 };
 
 // Loại Vũ Khí
@@ -389,49 +443,131 @@ class Tank {
 
     ctx.save();
     ctx.translate(this.x, this.y);
+
+    // 0. Đổ bóng hoạt hình (Cartoon Drop Shadow) dưới thân xe
+    ctx.save();
+    ctx.rotate(this.angle);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(-this.width / 2 + 2, -this.height / 2 + 5, this.width, this.height, 8);
+    ctx.fill();
+    ctx.restore();
+
     ctx.rotate(this.angle);
 
-    // Khiên Năng Lượng (nếu có)
+    // 1. Khiên Năng Lượng Hoạt Hình Bong Bóng (nếu có)
     if (this.hasShield) {
       ctx.beginPath();
-      ctx.arc(0, 0, 24, 0, Math.PI * 2);
-      ctx.strokeStyle = '#00f2fe';
-      ctx.lineWidth = 3;
-      ctx.fillStyle = 'rgba(0, 242, 254, 0.2)';
+      ctx.arc(0, 0, 26, 0, Math.PI * 2);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 4;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
       ctx.fill();
       ctx.stroke();
+
+      // Vệt sáng phản chiếu bong bóng
+      ctx.beginPath();
+      ctx.arc(-10, -10, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fill();
     }
 
-    // Xích Xe Tank
-    ctx.fillStyle = this.color.track;
-    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, 7);
-    ctx.fillRect(-this.width / 2, this.height / 2 - 7, this.width, 7);
+    // 2. Hai Dải Xích Xe Tăng Phong Cách Hoạt Hình (Chibi Treads)
+    const drawTrack = (offsetY) => {
+      // Khung xích chính viền đậm
+      ctx.fillStyle = this.color.track;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(-this.width / 2 - 1, offsetY, this.width + 2, 8, 4);
+      ctx.fill();
+      ctx.stroke();
 
-    // Thân Xe Tank
+      // Bánh xe lăn bên trong xích (Wheels)
+      ctx.fillStyle = this.color.trackWheel;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      for (let wx = -this.width / 2 + 5; wx <= this.width / 2 - 5; wx += 8) {
+        ctx.beginPath();
+        ctx.arc(wx, offsetY + 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+    };
+    drawTrack(-this.height / 2 - 1);
+    drawTrack(this.height / 2 - 7);
+
+    // 3. Thân Xe Tăng Bo Tròn Hoạt Hình (Chibi Armor Body)
     ctx.fillStyle = this.color.body;
-    ctx.strokeStyle = '#080a10';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.roundRect(-this.width / 2 + 4, -this.height / 2 + 5, this.width - 8, this.height - 10, 4);
+    ctx.roundRect(-this.width / 2 + 3, -this.height / 2 + 4, this.width - 6, this.height - 8, 6);
     ctx.fill();
     ctx.stroke();
 
-    // Nòng Pháo
-    ctx.fillStyle = this.color.turret;
-    ctx.fillRect(0, -3.5, 22, 7);
-    ctx.strokeRect(0, -3.5, 22, 7);
-
-    // Tháp Pháo Tròn
+    // Vạt màu bóng tối dưới thân xe (Shading)
+    ctx.fillStyle = this.color.bodyDark;
     ctx.beginPath();
-    ctx.arc(0, 0, 9, 0, Math.PI * 2);
+    ctx.roundRect(-this.width / 2 + 3, 2, this.width - 6, this.height / 2 - 6, [0, 0, 6, 6]);
+    ctx.fill();
+
+    // Vệt sáng bóng phía trên (Highlight)
+    ctx.fillStyle = this.color.highlight;
+    ctx.beginPath();
+    ctx.roundRect(-this.width / 2 + 6, -this.height / 2 + 6, this.width - 12, 4, 2);
+    ctx.fill();
+
+    // 4. Nòng Pháo Mập Mạp Hoạt Hình (Chibi Cannon Barrel)
     ctx.fillStyle = this.color.turret;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(0, -4.5, 23, 9, 3);
     ctx.fill();
     ctx.stroke();
 
-    // Cờ CTF trên nóc xe
+    // Đầu họng pháo (Muzzle Cap)
+    ctx.fillStyle = this.color.turretDark;
+    ctx.beginPath();
+    ctx.roundRect(19, -6, 5, 12, 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Lỗ bắn tròn xoe
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(23, 0, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 5. Tháp Pháo Tròn Nổi Bật (Turret Dome)
+    ctx.beginPath();
+    ctx.arc(-2, 0, 11, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.turret;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 3.5;
+    ctx.fill();
+    ctx.stroke();
+
+    // Nắp cửa hầm xe tăng (Hatch)
+    ctx.beginPath();
+    ctx.arc(-2, 0, 6, 0, Math.PI * 2);
+    ctx.fillStyle = this.color.turretDark;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    // Đốm sáng phản chiếu mắt hoạt hình trên nóc
+    ctx.beginPath();
+    ctx.arc(-5, -3, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.fill();
+
+    // 6. Cờ CTF trên nóc xe
     if (this.hasFlag) {
-      ctx.font = '16px sans-serif';
-      ctx.fillText('🚩', -8, -16);
+      ctx.font = '20px sans-serif';
+      ctx.fillText('🚩', -10, -18);
     }
 
     ctx.restore();
@@ -938,15 +1074,17 @@ function gameLoop(time) {
     if (Game.screenShake < 0.5) Game.screenShake = 0;
   }
 
-  ctx.fillStyle = '#141724';
+  // 0. Mặt sàn chiến trường phong cách hoạt hình (Cartoon Sand / Arena Floor)
+  ctx.fillStyle = '#f8fafc';
   ctx.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
 
-  // Vẽ lưới sàn
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-  for (let x = 0; x < Game.canvas.width; x += 30) {
+  // Hoa văn chấm bi / ô gạch hoạt hình nhẹ nhàng
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1.5;
+  for (let x = 0; x < Game.canvas.width; x += 35) {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, Game.canvas.height); ctx.stroke();
   }
-  for (let y = 0; y < Game.canvas.height; y += 30) {
+  for (let y = 0; y < Game.canvas.height; y += 35) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(Game.canvas.width, y); ctx.stroke();
   }
 
@@ -1032,16 +1170,39 @@ function gameLoop(time) {
     }
   }
 
-  // 7. Bức tường (Walls)
-  ctx.fillStyle = '#2b3145';
-  ctx.strokeStyle = '#3e4663';
-  ctx.lineWidth = 2;
+  // 7. Bức tường gạch hoạt hình (Cartoon Brick Walls)
   for (const w of walls) {
-    ctx.fillRect(w.x, w.y, w.w, w.h);
-    ctx.strokeRect(w.x, w.y, w.w, w.h);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.fillRect(w.x + 2, w.y + 2, w.w - 4, 3);
-    ctx.fillStyle = '#2b3145';
+    // Đổ bóng tường (Drop Shadow)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.fillRect(w.x + 4, w.y + 4, w.w, w.h);
+
+    // Thân tường gạch màu cam đất ấm áp
+    ctx.fillStyle = '#ea580c';
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(w.x, w.y, w.w, w.h, 4);
+    ctx.fill();
+    ctx.stroke();
+
+    // Mặt trên sáng của tường (Highlight top)
+    ctx.fillStyle = '#fb923c';
+    ctx.beginPath();
+    ctx.roundRect(w.x + 2, w.y + 2, w.w - 4, Math.min(w.h - 4, 4), 2);
+    ctx.fill();
+
+    // Khắc rãnh gạch hoạt hình
+    ctx.strokeStyle = '#c2410c';
+    ctx.lineWidth = 1.5;
+    if (w.w > w.h) {
+      for (let gx = w.x + 24; gx < w.x + w.w - 10; gx += 28) {
+        ctx.beginPath(); ctx.moveTo(gx, w.y + 3); ctx.lineTo(gx, w.y + w.h - 3); ctx.stroke();
+      }
+    } else {
+      for (let gy = w.y + 24; gy < w.y + w.h - 10; gy += 28) {
+        ctx.beginPath(); ctx.moveTo(w.x + 3, gy); ctx.lineTo(w.x + w.w - 3, gy); ctx.stroke();
+      }
+    }
   }
 
   ctx.restore();
