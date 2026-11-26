@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tank Trouble 2026 - Chiến Trường Xe Tank</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- Header / HUD -->
+    <header class="game-hud">
+      <div class="hud-left">
+        <div class="logo">⚡ TANK TROUBLE <span>PRO</span></div>
+        <div class="game-mode-badge" id="hudGameMode">CHẾ ĐỘ: SINH TỒN</div>
+      </div>
+      <div class="hud-center">
+        <div class="score-card player-score">
+          <span class="dot player-dot"></span>
+          <span class="label">BẠN:</span>
+          <span class="value" id="scorePlayer">0</span>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="score-card enemy-score">
+          <span class="dot enemy-dot"></span>
+          <span class="label">ĐỊCH CÒN:</span>
+          <span class="value" id="enemyCountDisplay">3</span>
+        </div>
+        <div class="flag-status-card" id="flagStatusBox" style="display:none;">
+          <span class="flag-icon">🚩</span>
+          <span id="flagStatusText">Cờ: Tại căn cứ</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <button id="btnSettings" class="btn-icon" title="Cài đặt trận đấu">⚙️</button>
+        <button id="btnPause" class="btn-icon" title="Tạm dừng">⏸</button>
+        <button id="btnRestartQuick" class="btn-primary-sm">Làm mới 🔄</button>
+      </div>
+    </header>
+
+    <!-- Main Game Board -->
+    <main class="canvas-container">
+      <canvas id="gameCanvas" width="900" height="600"></canvas>
+      
+      <!-- Mobile On-screen Controls -->
+      <div class="mobile-controls" id="mobileControls">
+        <div class="dpad">
+          <button class="dpad-btn up" id="btnUp">▲</button>
+          <div class="dpad-horizontal">
+            <button class="dpad-btn left" id="btnLeft">◀</button>
+            <button class="dpad-btn right" id="btnRight">▶</button>
+          </div>
+          <button class="dpad-btn down" id="btnDown">▼</button>
+        </div>
+        <div class="action-buttons">
+          <button class="fire-btn" id="btnFire">🔥 BẮN</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer Guides -->
+    <footer class="game-footer">
+      <span>⌨️ <b>Phím máy tính:</b> Mũi tên / W,A,S,D để Lái xe | <b>SPACE (Cách)</b> hoặc <b>J</b> để Bắn đạn nảy | <b>R</b>: Chơi lại</span>
+    </footer>
+  </div>
+
+  <!-- Settings / Match Setup Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ THIẾT LẬP CHIẾN TRƯỜNG</h2>
+        <button class="close-modal-btn" id="btnCloseSettings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Chế độ chơi -->
+        <div class="setting-group">
+          <label class="setting-label">🎯 Chế độ chơi:</label>
+          <div class="radio-grid">
+            <label class="radio-card active">
+              <input type="radio" name="gameMode" value="deathmatch" checked>
+              <div class="card-title">⚔️ Tiêu diệt toàn bộ</div>
+              <div class="card-desc">Bắn hạ tất cả xe tăng địch để giành chiến thắng</div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="gameMode" value="capture_flag">
+              <div class="card-title">🚩 Cướp cờ (CTF)</div>
+              <div class="card-desc">Vượt qua phòng thủ, chạm cờ địch và đem về căn cứ!</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Chọn Bản Đồ (Map) -->
+        <div class="setting-group">
+          <label class="setting-label">🗺️ Chọn Bản Đồ (Map):</label>
+          <div class="map-grid" id="mapSelectorGrid">
+            <!-- Render maps via JS -->
+          </div>
+        </div>
+
+        <!-- Số lượng Xe Tank Địch -->
+        <div class="setting-group">
+          <label class="setting-label">🤖 Số lượng Xe Tank Địch (Bot AI):</label>
+          <div class="slider-row">
+            <input type="range" id="enemyCountSlider" min="1" max="7" value="3" step="1">
+            <span class="slider-val-badge" id="sliderValDisplay">3 chiếc</span>
+          </div>
+          <div class="slider-hint">Xe tăng địch có AI tự tìm đường, né đạn nảy và ngắm bắn!</div>
+        </div>
+
+        <!-- Độ khó của Bot -->
+        <div class="setting-group">
+          <label class="setting-label">🧠 Trí thông minh của Bot AI:</label>
+          <select id="botDifficultySelect" class="form-select">
+            <option value="easy">Dễ (Bắn chậm, di chuyển thong thả)</option>
+            <option value="medium" selected>Vừa phải (Bắn chuẩn, biết lùng sục)</option>
+            <option value="hard">Khó (Ngắm đón đầu, đạn nảy tính góc cực gắt)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveAndPlay" class="btn-start-war">BẮT ĐẦU TRẬN ĐẤU 🔥</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over / Win Banner Modal -->
+  <div class="banner-overlay" id="gameResultBanner" style="display:none;">
+    <div class="banner-box">
+      <div class="banner-icon" id="bannerIcon">🏆</div>
+      <h1 class="banner-title" id="bannerTitle">CHIẾN THẮNG!</h1>
+      <p class="banner-desc" id="bannerDesc">Bạn đã tiêu diệt toàn bộ xe tăng đối phương!</p>
+      <div class="banner-actions">
+        <button class="btn-start-war" id="btnPlayAgain">Chơi Ván Mới 🎮</button>
+        <button class="btn-secondary" id="btnChangeSettings">Đổi Bản Đồ 🗺️</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
